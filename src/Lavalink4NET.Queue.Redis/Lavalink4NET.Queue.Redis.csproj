@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <LangVersion>preview</LangVersion>
+
+    <!-- Package Description -->
+    <Description>
+      Redis storage backend for Lavalink4NET persistent queues. Provides high-performance, distributed queue storage using Redis.
+    </Description>
+
+    <PackageTags>lavalink,lavalink-wrapper,discord,discord-music,discord-music-bot,queue,persistence,redis</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="StackExchange.Redis" Version="2.7.33" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lavalink4NET.Queue.Persistence\Lavalink4NET.Queue.Persistence.csproj" />
+  </ItemGroup>
+
+  <Import Project="../Lavalink4NET.targets" />
+</Project>
