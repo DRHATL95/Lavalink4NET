@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Library</OutputType>
+    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <LangVersion>preview</LangVersion>
+
+    <!-- Package Description -->
+    <Description>
+      Persistent queue support for Lavalink4NET. This package provides abstractions and implementations for persisting track queues to external storage, enabling dashboard integration and cross-session queue recovery.
+    </Description>
+
+    <PackageTags>lavalink,lavalink-wrapper,discord,discord-music,discord-music-bot,queue,persistence,redis,database</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\.editorconfig" Link=".editorconfig" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="8.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lavalink4NET\Lavalink4NET.csproj" />
+  </ItemGroup>
+
+  <Import Project="../Lavalink4NET.targets" />
+</Project>
