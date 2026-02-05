@@ -93,15 +93,10 @@ public sealed class EfCoreQueueStore<TContext> : IQueueStore
         context.QueuedTracks.Remove(entity);
 
         // Decrement positions of all items after the removed entity
-        var entitiesToUpdate = await context.QueuedTracks
+        await context.QueuedTracks
             .Where(e => e.GuildId == guildId && e.Position > entity.Position)
-            .ToListAsync(cancellationToken)
+            .ExecuteUpdateAsync(s => s.SetProperty(e => e.Position, e => e.Position - 1), cancellationToken)
             .ConfigureAwait(false);
-
-        foreach (var entityToUpdate in entitiesToUpdate)
-        {
-            entityToUpdate.Position--;
-        }
 
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -128,15 +123,10 @@ public sealed class EfCoreQueueStore<TContext> : IQueueStore
         context.QueuedTracks.Remove(entity);
 
         // Decrement positions of all items after the removed position
-        var entitiesToUpdate = await context.QueuedTracks
+        await context.QueuedTracks
             .Where(e => e.GuildId == guildId && e.Position > position)
-            .ToListAsync(cancellationToken)
+            .ExecuteUpdateAsync(s => s.SetProperty(e => e.Position, e => e.Position - 1), cancellationToken)
             .ConfigureAwait(false);
-
-        foreach (var entityToUpdate in entitiesToUpdate)
-        {
-            entityToUpdate.Position--;
-        }
 
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
@@ -163,15 +153,10 @@ public sealed class EfCoreQueueStore<TContext> : IQueueStore
         if (entities.Count > 0)
         {
             var maxRemovedPosition = entities.Max(e => e.Position);
-            var entitiesToUpdate = await context.QueuedTracks
+            await context.QueuedTracks
                 .Where(e => e.GuildId == guildId && e.Position > maxRemovedPosition)
-                .ToListAsync(cancellationToken)
+                .ExecuteUpdateAsync(s => s.SetProperty(e => e.Position, e => e.Position - entities.Count), cancellationToken)
                 .ConfigureAwait(false);
-
-            foreach (var entityToUpdate in entitiesToUpdate)
-            {
-                entityToUpdate.Position -= entities.Count;
-            }
         }
 
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
@@ -286,15 +271,10 @@ public sealed class EfCoreQueueStore<TContext> : IQueueStore
         context.QueuedTracks.Remove(entity);
 
         // Decrement positions of all remaining items
-        var entitiesToUpdate = await context.QueuedTracks
+        await context.QueuedTracks
             .Where(e => e.GuildId == guildId)
-            .ToListAsync(cancellationToken)
+            .ExecuteUpdateAsync(s => s.SetProperty(e => e.Position, e => e.Position - 1), cancellationToken)
             .ConfigureAwait(false);
-
-        foreach (var entityToUpdate in entitiesToUpdate)
-        {
-            entityToUpdate.Position--;
-        }
 
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
