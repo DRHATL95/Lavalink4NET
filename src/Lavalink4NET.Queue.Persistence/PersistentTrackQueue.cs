@@ -25,7 +25,7 @@ public sealed class PersistentTrackQueue : ITrackQueue
     // Local cache for quick access (synchronized with store)
     private readonly List<ITrackQueueItem> _cachedItems;
     private readonly List<Guid> _cachedIds;
-    private static readonly SemaphoreSlim _initializationSemaphore = new(1, 1);
+    private readonly SemaphoreSlim _initializationSemaphore = new(1, 1);
     private bool _isInitialized;
 
     /// <summary>
