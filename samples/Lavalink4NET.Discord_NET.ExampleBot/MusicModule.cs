@@ -107,7 +107,7 @@ public sealed class MusicModule : InteractionModuleBase<SocketInteractionContext
             return;
         }
 
-        await RespondAsync($"Position: {player.Position?.Position} / {player.CurrentTrack.Duration}.").ConfigureAwait(false);
+        await RespondAsync($"Position: {player.Position?.Position} / {player.CurrentTrack!.Duration}.").ConfigureAwait(false);
     }
 
     /// <summary>

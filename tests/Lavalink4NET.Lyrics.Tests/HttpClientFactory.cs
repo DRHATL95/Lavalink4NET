@@ -16,6 +16,7 @@ internal sealed class HttpClientFactory : IHttpClientFactory, IAsyncDisposable
     public HttpClientFactory()
     {
         var builder = WebApplication.CreateBuilder();
+
         builder.WebHost.UseTestServer();
         builder.Services.AddWebSockets(x => { });
 

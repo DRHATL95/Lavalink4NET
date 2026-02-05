@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [24.x]
 
     steps:
     - uses: actions/checkout@v3
@@ -33,7 +33,15 @@ jobs:
       name: Build documentation
         
     - name: Archive documentation
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4.6.1
       with:
         name: Documentation
         path: docs/build/
+
+    - name: Deploy
+      uses: cloudflare/wrangler-action@v3
+      with:
+        apiToken: ${{ secrets.CLOUDFLARE_PAGES_API_KEY }}
+        accountId: ${{ secrets.CLOUDFLARE_PAGES_ACCOUNT_ID }}
+        command: pages deploy docs/build/ --project-name=lavalink4net
+        gitHubToken: ${{ secrets.GITHUB_TOKEN }}

@@ -1,4 +1,6 @@
-﻿namespace Lavalink4NET.Players;
+﻿using System;
+
+namespace Lavalink4NET.Players;
 
 using Lavalink4NET.Rest.Entities.Tracks;
 
@@ -11,6 +13,8 @@ public record class LavalinkPlayerOptions
     public string? Label { get; set; }
 
     public ITrackQueueItem? InitialTrack { get; set; }
+
+    public TimeSpan? InitialPosition { get; set; }
 
     public TrackLoadOptions InitialLoadOptions { get; set; }
 

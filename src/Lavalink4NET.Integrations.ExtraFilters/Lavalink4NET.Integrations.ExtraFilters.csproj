@@ -15,5 +15,4 @@
     <ProjectReference Include="..\Lavalink4NET\Lavalink4NET.csproj" />
   </ItemGroup>
 
-	<Import Project="../Lavalink4NET.targets" />
 </Project>

@@ -128,7 +128,7 @@ public sealed class PlayerManagerTests
             playerFactory: PlayerFactory.Default,
             options: Options.Create(new LavalinkPlayerOptions()));
 
-        await player.DisposeAsync().ConfigureAwait(false);
+        await player.DisposeAsync().ConfigureAwait(true);
 
         // Assert
         Assert.Empty(playerManager.Players);
@@ -215,7 +215,7 @@ public sealed class PlayerManagerTests
         // Assert
         await Assert
             .ThrowsAsync<InvalidOperationException>(Act)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
     }
 
     [Fact]
@@ -254,7 +254,7 @@ public sealed class PlayerManagerTests
         // Act
         var player = await playerManager
             .GetPlayerAsync<QueuedLavalinkPlayer>(guildId: 0)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.Same(joinedPlayer, player);
@@ -422,7 +422,7 @@ public sealed class PlayerManagerTests
             playerFactory: PlayerFactory.Queued,
             options: Options.Create(new QueuedLavalinkPlayerOptions()));
 
-        await player.DisposeAsync().ConfigureAwait(false);
+        await player.DisposeAsync().ConfigureAwait(true);
 
         // Act
         var hasPlayer = playerManager.HasPlayer(guildId: 0UL);

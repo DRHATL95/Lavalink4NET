@@ -63,7 +63,7 @@ public sealed class AudioServiceTests
         // Assert
         await Assert
             .ThrowsAsync<TimeoutException>(Action)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
     }
 
     [Fact]
@@ -104,7 +104,7 @@ public sealed class AudioServiceTests
         // Assert
         await Assert
             .ThrowsAsync<TaskCanceledException>(Action)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
     }
 
     [Fact]
@@ -152,7 +152,7 @@ public sealed class AudioServiceTests
         // Act
         await audioService!
             .WaitForReadyAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.Equal("session", audioService.SessionId);
@@ -211,7 +211,7 @@ public sealed class AudioServiceTests
         // Act
         await audioService!
             .WaitForReadyAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         await Task.Delay(500);
 

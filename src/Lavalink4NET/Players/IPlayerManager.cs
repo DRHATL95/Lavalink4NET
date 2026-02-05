@@ -37,6 +37,15 @@ public interface IPlayerManager
         where TPlayer : ILavalinkPlayer
         where TOptions : LavalinkPlayerOptions;
 
+    ValueTask<TPlayer> JoinAsync<TPlayer, TOptions>(ulong guildId, ulong voiceChannelId,
+        PlayerFactory<TPlayer, TOptions> playerFactory, IOptions<TOptions> options,
+        ILavalinkSessionProvider? overridenLavalinkSessionProvider, CancellationToken cancellationToken = default)
+        where TPlayer : ILavalinkPlayer
+        where TOptions : LavalinkPlayerOptions
+    {
+        return JoinAsync(guildId, voiceChannelId, playerFactory, options, cancellationToken);
+    }
+
     ValueTask<PlayerResult<TPlayer>> RetrieveAsync<TPlayer, TOptions>(
         ulong guildId,
         ulong? memberVoiceChannel,

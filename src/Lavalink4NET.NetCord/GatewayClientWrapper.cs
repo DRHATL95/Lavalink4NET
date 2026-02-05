@@ -11,6 +11,8 @@ internal sealed class GatewayClientWrapper : GatewayClientWrapperBase, IDiscordC
 {
     private readonly GatewayClient _client;
 
+    private readonly TaskCompletionSource<bool> _ready = new();
+
     public GatewayClientWrapper(GatewayClient client)
     {
         ArgumentNullException.ThrowIfNull(client);
@@ -19,6 +21,13 @@ internal sealed class GatewayClientWrapper : GatewayClientWrapperBase, IDiscordC
 
         _client.VoiceStateUpdate += HandleVoiceStateUpdateAsync;
         _client.VoiceServerUpdate += HandleVoiceServerUpdateAsync;
+        _client.Ready += HandleReady;
+    }
+
+    private ValueTask HandleReady(ReadyEventArgs arg)
+    {
+        _ready.TrySetResult(true);
+        return default;
     }
 
     public void Dispose()
@@ -31,7 +40,7 @@ internal sealed class GatewayClientWrapper : GatewayClientWrapperBase, IDiscordC
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        await _client.ReadyAsync
+        await _ready.Task
             .WaitAsync(cancellationToken)
             .ConfigureAwait(false);
 

@@ -191,7 +191,7 @@ public sealed class LavalinkPlayerTests
 
         await listener
             .NotifyPlayerUpdateAsync(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(30), true, TimeSpan.FromMilliseconds(130))
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Act
         var position = player.Position;
@@ -232,7 +232,7 @@ public sealed class LavalinkPlayerTests
         // Act
         await player
             .PauseAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(called);
@@ -270,7 +270,7 @@ public sealed class LavalinkPlayerTests
         // Act
         await player
             .ResumeAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(called);
@@ -308,7 +308,7 @@ public sealed class LavalinkPlayerTests
         // Act
         await player
             .SetVolumeAsync(0.1F)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(called);
@@ -347,7 +347,7 @@ public sealed class LavalinkPlayerTests
         // Act
         await player
             .StopAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(called);
@@ -377,7 +377,7 @@ public sealed class LavalinkPlayerTests
         // Act
         await player
             .StopAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.Null(player.CurrentTrack);
@@ -408,7 +408,7 @@ public sealed class LavalinkPlayerTests
         // Act
         await player
             .StopAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.Equal(PlayerState.Destroyed, player.State);
@@ -446,7 +446,7 @@ public sealed class LavalinkPlayerTests
         // Act
         await player
             .SeekAsync(TimeSpan.FromSeconds(30))
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(called);
@@ -484,12 +484,12 @@ public sealed class LavalinkPlayerTests
 
         await listener
             .NotifyPlayerUpdateAsync(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(20), connected: true, latency: null)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Act
         await player
             .SeekAsync(TimeSpan.FromSeconds(30), SeekOrigin.Begin)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(called);
@@ -527,12 +527,12 @@ public sealed class LavalinkPlayerTests
 
         await listener
             .NotifyPlayerUpdateAsync(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(20), connected: true, latency: null)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Act
         await player
             .SeekAsync(TimeSpan.FromSeconds(30), SeekOrigin.Current)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(called);
@@ -570,12 +570,12 @@ public sealed class LavalinkPlayerTests
 
         await listener
             .NotifyPlayerUpdateAsync(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(20), connected: true, latency: null)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Act
         await player
             .SeekAsync(TimeSpan.FromSeconds(-10), SeekOrigin.Current)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(called);
@@ -613,12 +613,12 @@ public sealed class LavalinkPlayerTests
 
         await listener
             .NotifyPlayerUpdateAsync(DateTimeOffset.UtcNow, TimeSpan.FromSeconds(20), connected: true, latency: null)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Act
         await player
             .SeekAsync(TimeSpan.FromSeconds(-10), SeekOrigin.End)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(called);
@@ -647,7 +647,7 @@ public sealed class LavalinkPlayerTests
             .ExceptionAsync(async () => await player
                 .SeekAsync(TimeSpan.FromSeconds(30), (SeekOrigin)42)
                 .ConfigureAwait(false))
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.IsType<ArgumentOutOfRangeException>(exception);
@@ -675,7 +675,7 @@ public sealed class LavalinkPlayerTests
         // Act
         await listener
             .NotifyTrackEndedAsync(player.CurrentTrack!, TrackEndReason.Finished)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.Contains("NotifyTrackEndedAsync", player.TriggeredEvents);
@@ -703,7 +703,7 @@ public sealed class LavalinkPlayerTests
         // Act
         await listener
             .NotifyVoiceStateUpdatedAsync(new VoiceState(42, null))
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.Contains("NotifyChannelUpdateAsync", player.TriggeredEvents);
@@ -732,7 +732,7 @@ public sealed class LavalinkPlayerTests
         // Act
         await listener
             .NotifyTrackExceptionAsync(player.CurrentTrack!, exception)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.Contains("NotifyTrackExceptionAsync", player.TriggeredEvents);
@@ -760,7 +760,7 @@ public sealed class LavalinkPlayerTests
         // Act
         await listener
             .NotifyTrackStartedAsync(player.CurrentTrack!)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.Contains("NotifyTrackStartedAsync", player.TriggeredEvents);
@@ -788,7 +788,7 @@ public sealed class LavalinkPlayerTests
         // Act
         await listener
             .NotifyTrackStuckAsync(player.CurrentTrack!, TimeSpan.FromSeconds(1))
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.Contains("NotifyTrackStuckAsync", player.TriggeredEvents);
@@ -816,7 +816,7 @@ public sealed class LavalinkPlayerTests
         // Act
         await player.Filters
             .CommitAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.Contains("NotifyFiltersUpdatedAsync", player.TriggeredEvents);

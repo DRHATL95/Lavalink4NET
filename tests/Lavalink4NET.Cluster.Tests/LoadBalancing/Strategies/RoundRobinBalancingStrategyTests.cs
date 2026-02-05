@@ -23,7 +23,7 @@ public sealed class RoundRobinBalancingStrategyTests
         // Act
         var balanceResult = await strategy
             .ScoreAsync(ImmutableArray.Create(node1, node2, node3))
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.Equal(3D / 3.0, balanceResult.Nodes[0].Score);
@@ -44,12 +44,12 @@ public sealed class RoundRobinBalancingStrategyTests
 
         await strategy
             .ScoreAsync(ImmutableArray.Create(node1, node2, node3))
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Act
         var balanceResult = await strategy
             .ScoreAsync(ImmutableArray.Create(node1, node2, node3))
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.Equal(1D / 3.0, balanceResult.Nodes[0].Score);

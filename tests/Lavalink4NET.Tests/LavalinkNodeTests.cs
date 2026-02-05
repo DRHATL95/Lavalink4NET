@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Immutable;
+using System.Net.WebSockets;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Channels;
@@ -75,7 +76,7 @@ public sealed class LavalinkNodeTests
         await using var __ = node.ConfigureAwait(false);
 
         socketFactory.Socket.Send(new ReadyPayload(false, "abc"));
-        await Task.Delay(100).ConfigureAwait(false);
+        await Task.Delay(100).ConfigureAwait(true);
 
         // Act
         var isReady = node.IsReady;
@@ -505,6 +506,7 @@ file sealed class LavalinkSocket : ILavalinkSocket
         if (_payloadChannel.Writer.TryComplete())
         {
             _flushSemaphoreSlim.Wait();
+            ConnectionClosed?.Invoke(this, new ConnectionClosedEventArgs(this, WebSocketCloseStatus.NormalClosure, null));
         }
     }
 

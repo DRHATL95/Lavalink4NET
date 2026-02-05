@@ -76,7 +76,7 @@ public class LavalinkApiClientTests
     [InlineData(StrictSearchBehavior.Passthrough, "https://youtube.com/watch?v=abc", "https://youtube.com/watch?v=abc", "spsearch")]
     [InlineData(StrictSearchBehavior.Passthrough, "https://open.spotify.com/playlist/abc", "https://open.spotify.com/playlist/abc", "spsearch")]
     [InlineData(StrictSearchBehavior.Passthrough, "ftp://example.com", "ftp://example.com", "spsearch")]
-    public void TestBuildIdentifier(StrictSearchBehavior searchBehavior, string identifier, string expected, string searchMode)
+    public void TestBuildIdentifier(StrictSearchBehavior searchBehavior, string identifier, string expected, string? searchMode)
     {
         // Arrange
         var loadOptions = new TrackLoadOptions(
@@ -146,7 +146,7 @@ public class LavalinkApiClientTests
         // Act
         var version = await client
             .RetrieveVersionAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.Equal("1.0.0", version);
@@ -213,7 +213,7 @@ public class LavalinkApiClientTests
         // Act
         _ = await client
             .RetrieveServerInformationAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
     }
 
     [Fact]
@@ -255,7 +255,7 @@ public class LavalinkApiClientTests
         // Act
         _ = await client
             .RetrieveStatisticsAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
     }
 
     [Fact]
@@ -304,7 +304,7 @@ public class LavalinkApiClientTests
         // Act
         var track = await client
             .LoadTrackAsync("dQw4w9WgXcQ")
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.NotNull(track);
@@ -366,7 +366,7 @@ public class LavalinkApiClientTests
         // Act
         var result = await client
             .LoadTracksAsync("https://www.youtube.com/playlist?list=PLbpi6ZahtOH6NHu2SGpjLqW_3mYg3S3hw")
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(result.IsPlaylist);
@@ -442,7 +442,7 @@ public class LavalinkApiClientTests
         // Act
         var track = await client
             .LoadTrackAsync("Never Gonna Give You Up", loadOptions)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.NotNull(track);
@@ -491,7 +491,7 @@ public class LavalinkApiClientTests
         // Act
         var routePlannerInformation = await client
             .GetRoutePlannerInformationAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.NotNull(routePlannerInformation);
@@ -520,7 +520,7 @@ public class LavalinkApiClientTests
         // Act
         var routePlannerInformation = await client
             .GetRoutePlannerInformationAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.Null(routePlannerInformation);
@@ -558,7 +558,7 @@ public class LavalinkApiClientTests
         // Act
         await client
             .UnmarkFailedAddressAsync(new AddressUnmarkProperties { Address = failedAddress, })
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(called);
@@ -629,7 +629,7 @@ public class LavalinkApiClientTests
         // Act
         await client
             .UnmarkAllFailedAddressesAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(called);
@@ -735,7 +735,7 @@ public class LavalinkApiClientTests
         // Act
         await client
             .UpdatePlayerAsync("abc", 1234567890, playerUpdate)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(called);
@@ -766,7 +766,7 @@ public class LavalinkApiClientTests
         // Act
         await client
             .DestroyPlayerAsync("abc", 1234567890)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(called);
@@ -828,7 +828,7 @@ public class LavalinkApiClientTests
         // Act
         var model = await client
             .GetPlayerAsync("abc", 1234567890)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(called);
@@ -853,7 +853,7 @@ public class LavalinkApiClientTests
         // Act
         var model = await client
             .GetPlayerAsync("abc", 1234567890)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.Null(model);
@@ -945,7 +945,7 @@ public class LavalinkApiClientTests
         // Act
         var model = await client
             .GetPlayersAsync("abc")
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(called);

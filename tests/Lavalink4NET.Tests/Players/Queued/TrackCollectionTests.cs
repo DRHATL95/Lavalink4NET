@@ -162,7 +162,7 @@ public sealed class TrackCollectionTests
 
         await collection
             .AddAsync(item)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         Assert.Single(collection);
         Assert.Equal(item, collection[0]);
@@ -176,7 +176,7 @@ public sealed class TrackCollectionTests
 
         await collection
             .AddRangeAsync(items)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         Assert.Equal(3, collection.Count);
         Assert.Equal(items, collection);
@@ -189,11 +189,11 @@ public sealed class TrackCollectionTests
 
         await collection
             .AddRangeAsync(Enumerable.Range(1, 5).Select(_ => new TestTrackQueueItem()).ToList())
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         await collection
             .ClearAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         Assert.Empty(collection);
     }
@@ -208,11 +208,11 @@ public sealed class TrackCollectionTests
 
         await collection
             .AddRangeAsync(new List<ITrackQueueItem> { item1, item2, item1 })
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         var difference = await collection
             .DistinctAsync(null)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         Assert.Equal(1, difference);
         Assert.Equal(2, collection.Count);
@@ -227,11 +227,11 @@ public sealed class TrackCollectionTests
 
         await collection
             .AddAsync(item)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         var removed = await collection
             .RemoveAsync(item)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
         var stillContainsItem = collection.Contains(item);
 
         Assert.True(removed);
@@ -245,11 +245,11 @@ public sealed class TrackCollectionTests
 
         await collection
             .AddRangeAsync(Enumerable.Range(1, 5).Select(_ => new TestTrackQueueItem()).ToList())
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         var removed = await collection
             .RemoveAtAsync(2)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         Assert.True(removed);
         Assert.Equal(4, collection.Count);
@@ -262,11 +262,11 @@ public sealed class TrackCollectionTests
 
         await collection
             .AddRangeAsync(Enumerable.Range(1, 5).Select(_ => new TestTrackQueueItem()).ToList())
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         var removed = await collection
             .RemoveAtAsync(5)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         Assert.False(removed);
         Assert.Equal(5, collection.Count);
@@ -281,12 +281,12 @@ public sealed class TrackCollectionTests
 
         await collection
             .AddRangeAsync(items)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         var index = 0;
         var removedCount = await collection
             .RemoveAllAsync(item => ++index % 2 is 0)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         Assert.Equal(2, removedCount);
         Assert.Equal(3, collection.Count);
@@ -299,11 +299,11 @@ public sealed class TrackCollectionTests
 
         await collection
             .AddRangeAsync(Enumerable.Range(1, 5).Select(_ => new TestTrackQueueItem()).ToList())
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         await collection
             .RemoveRangeAsync(2, 2)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         Assert.Equal(3, collection.Count);
     }

@@ -39,6 +39,9 @@ internal sealed class LavalinkNode : IAsyncDisposable
     private TaskCompletionSource<string> _readyTaskCompletionSource;
     private Task? _executeTask;
     private bool _disposed;
+    
+    internal event AsyncEventHandler<ConnectionClosedEventArgs>? SocketConnectionClosed;
+    internal event AsyncEventHandler<EventArgs>? SocketConnectionReady;
 
     public LavalinkNode(
         LavalinkNodeServiceContext serviceContext,
@@ -167,6 +170,7 @@ internal sealed class LavalinkNode : IAsyncDisposable
             }
 
             _logger.Ready(Label, SessionId);
+            await SocketConnectionReady.InvokeAsync(this, EventArgs.Empty);
         }
 
         if (SessionId is null)
@@ -491,12 +495,13 @@ internal sealed class LavalinkNode : IAsyncDisposable
         }
     }
 
-    private Task InvokeConnectionClosedAsync(object sender, ConnectionClosedEventArgs eventArgs)
+    private async Task InvokeConnectionClosedAsync(object sender, ConnectionClosedEventArgs eventArgs)
     {
         ArgumentNullException.ThrowIfNull(sender);
         ArgumentNullException.ThrowIfNull(eventArgs);
 
-        return _serviceContext.NodeListener.OnConnectionClosedAsync(eventArgs).AsTask();
+        await SocketConnectionClosed.InvokeAsync(this, eventArgs);
+        await _serviceContext.NodeListener.OnConnectionClosedAsync(eventArgs).AsTask();
     }
 
     private async ValueTask ReceiveInternalAsync(ILavalinkSocket socket, CancellationToken cancellationToken)

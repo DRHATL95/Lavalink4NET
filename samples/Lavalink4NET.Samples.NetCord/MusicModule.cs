@@ -1,16 +1,19 @@
-﻿namespace ExampleBot;
+namespace ExampleBot;
 
+﻿using NetCord.Rest;
 using Lavalink4NET;
 using Lavalink4NET.NetCord;
 using Lavalink4NET.Players;
 using Lavalink4NET.Rest.Entities.Tracks;
 using NetCord.Services.ApplicationCommands;
 
-public class MusicModule(IAudioService audioService) : ApplicationCommandModule<SlashCommandContext>
+public class MusicModule(IAudioService audioService) : ApplicationCommandModule<ApplicationCommandContext>
 {
     [SlashCommand("play", "Plays a track!")]
-    public async Task<string> PlayAsync([SlashCommandParameter(Description = "The query to search for")] string query)
+    public async Task PlayAsync([SlashCommandParameter(Description = "The query to search for")] string query)
     {
+        await RespondAsync(InteractionCallback.DeferredMessage());
+
         var retrieveOptions = new PlayerRetrieveOptions(ChannelBehavior: PlayerChannelBehavior.Join);
 
         var result = await audioService.Players
@@ -18,22 +21,25 @@ public class MusicModule(IAudioService audioService) : ApplicationCommandModule<
 
         if (!result.IsSuccess)
         {
-            return GetErrorMessage(result.Status);
+            var errorMessage = GetErrorMessage(result.Status);
+            await FollowupAsync(errorMessage);
+            return;
         }
 
         var player = result.Player;
 
         var track = await audioService.Tracks
-            .LoadTrackAsync(query, TrackSearchMode.YouTube);
+            .LoadTrackAsync(query, TrackSearchMode.SoundCloud);
 
         if (track is null)
         {
-            return "No tracks found.";
+            await FollowupAsync("No tracks found.");
+            return;
         }
 
         await player.PlayAsync(track);
 
-        return $"Now playing: {track.Title}";
+        await FollowupAsync($"Now playing: {track.Title}");
     }
 
     private static string GetErrorMessage(PlayerRetrieveStatus retrieveStatus) => retrieveStatus switch

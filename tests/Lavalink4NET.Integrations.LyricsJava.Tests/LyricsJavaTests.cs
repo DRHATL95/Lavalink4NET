@@ -56,7 +56,7 @@ public sealed class LyricsJavaTests
         // Act
         var lyrics = await client
             .GetGeniusLyricsAsync("Never Gonna Give You Up")
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.NotNull(lyrics);
@@ -112,7 +112,7 @@ public sealed class LyricsJavaTests
         // Act
         var lyrics = await client
             .GetGeniusLyricsAsync("Never Gonna Give You Up")
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.NotNull(lyrics);
@@ -167,7 +167,7 @@ public sealed class LyricsJavaTests
         // Act
         var lyrics = await client
             .GetGeniusLyricsAsync("Never Gonna Give You Up")
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.NotNull(lyrics);

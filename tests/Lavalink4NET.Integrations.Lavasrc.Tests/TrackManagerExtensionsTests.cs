@@ -27,7 +27,7 @@ public sealed class TrackManagerExtensionsTests
         // Act
         await trackManager.Object
             .GetTextToSpeechTrackAsync("abc")
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         trackManager.Verify();
@@ -51,7 +51,7 @@ public sealed class TrackManagerExtensionsTests
         // Act
         await trackManager.Object
             .GetTextToSpeechTrackAsync("abc abc abc")
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         trackManager.Verify();
@@ -95,7 +95,7 @@ public sealed class TrackManagerExtensionsTests
         // Act
         await trackManager.Object
             .GetTextToSpeechTrackAsync(text, options)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         trackManager.Verify();
