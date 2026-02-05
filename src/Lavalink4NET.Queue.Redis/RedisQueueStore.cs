@@ -94,25 +94,35 @@ public sealed class RedisQueueStore : IQueueStore, IAsyncDisposable
             return Array.Empty<QueuedTrackModel>();
         }
 
-        var result = new List<QueuedTrackModel>(itemIds.Length);
+        // Use pipelining to fetch all items in parallel
+        var batch = db.CreateBatch();
+        var tasks = new List<Task<RedisValue>>(itemIds.Length);
+        var validIds = new List<(int Position, Guid Id)>(itemIds.Length);
 
         for (var i = 0; i < itemIds.Length; i++)
         {
             var idString = (string?)itemIds[i];
-            if (idString is null || !Guid.TryParse(idString, out var id))
+            if (idString is not null && Guid.TryParse(idString, out var id))
             {
-                continue;
+                validIds.Add((i, id));
+                var itemKey = GetItemKey(guildId, id);
+                tasks.Add(batch.StringGetAsync(itemKey));
             }
+        }
 
-            var itemKey = GetItemKey(guildId, id);
-            var json = await db.StringGetAsync(itemKey).ConfigureAwait(false);
+        batch.Execute();
+        await Task.WhenAll(tasks).ConfigureAwait(false);
 
+        var result = new List<QueuedTrackModel>(validIds.Count);
+        for (var i = 0; i < tasks.Count; i++)
+        {
+            var json = await tasks[i].ConfigureAwait(false);
             if (!json.IsNullOrEmpty)
             {
                 var model = JsonSerializer.Deserialize<QueuedTrackModel>((string)json!, JsonOptions);
                 if (model is not null)
                 {
-                    result.Add(model with { Position = i });
+                    result.Add(model with { Position = validIds[i].Position });
                 }
             }
         }
@@ -150,9 +160,46 @@ public sealed class RedisQueueStore : IQueueStore, IAsyncDisposable
         ArgumentNullException.ThrowIfNull(models);
         cancellationToken.ThrowIfCancellationRequested();
 
-        foreach (var model in models)
+        var modelsList = models.ToList();
+        if (modelsList.Count == 0)
         {
-            await AddAsync(model, cancellationToken).ConfigureAwait(false);
+            return;
+        }
+
+        var db = await GetDatabaseAsync().ConfigureAwait(false);
+
+        // Group by guild ID to process each guild's queue atomically
+        var groupedByGuild = modelsList.GroupBy(m => m.GuildId);
+
+        foreach (var group in groupedByGuild)
+        {
+            var guildId = group.Key;
+            var guildModels = group.ToList();
+            var positionKey = GetPositionKey(guildId);
+
+            // Get current queue length
+            var currentCount = await db.SortedSetLengthAsync(positionKey).ConfigureAwait(false);
+
+            // Create transaction for this guild
+            var transaction = db.CreateTransaction();
+            var tasks = new List<Task>();
+
+            for (var i = 0; i < guildModels.Count; i++)
+            {
+                var model = guildModels[i];
+                var itemKey = GetItemKey(guildId, model.Id);
+                var json = JsonSerializer.Serialize(model, JsonOptions);
+
+                // Store item data
+                tasks.Add(transaction.StringSetAsync(itemKey, json));
+
+                // Add to sorted set with position
+                tasks.Add(transaction.SortedSetAddAsync(positionKey, model.Id.ToString(), currentCount + i));
+            }
+
+            // Execute transaction
+            await transaction.ExecuteAsync().ConfigureAwait(false);
+            await Task.WhenAll(tasks).ConfigureAwait(false);
         }
     }
 
@@ -173,6 +220,20 @@ public sealed class RedisQueueStore : IQueueStore, IAsyncDisposable
 
         // Delete item data
         await db.KeyDeleteAsync(itemKey).ConfigureAwait(false);
+
+        // Reindex remaining items to maintain contiguous 0-based positions
+        if (removed)
+        {
+            var remainingItems = await db.SortedSetRangeByRankAsync(positionKey).ConfigureAwait(false);
+            if (remainingItems.Length > 0)
+            {
+                var entries = remainingItems
+                    .Select((item, index) => new SortedSetEntry(item, index))
+                    .ToArray();
+
+                await db.SortedSetAddAsync(positionKey, entries).ConfigureAwait(false);
+            }
+        }
 
         return removed;
     }
@@ -220,14 +281,14 @@ public sealed class RedisQueueStore : IQueueStore, IAsyncDisposable
         // Get items in range
         var items = await db.SortedSetRangeByRankAsync(positionKey, startPosition, startPosition + count - 1).ConfigureAwait(false);
 
-        foreach (var item in items)
-        {
-            var idString = (string?)item;
-            if (idString is not null && Guid.TryParse(idString, out var id))
-            {
-                await RemoveAsync(guildId, id, cancellationToken).ConfigureAwait(false);
-            }
-        }
+        var validItems = items
+            .Where(item => (string?)item is not null && Guid.TryParse((string?)item, out _))
+            .Select(item => Guid.Parse((string)item!))
+            .ToList();
+
+        // Parallelize removals
+        var tasks = validItems.Select(id => RemoveAsync(guildId, id, cancellationToken).AsTask()).ToList();
+        await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -244,15 +305,20 @@ public sealed class RedisQueueStore : IQueueStore, IAsyncDisposable
         var itemIds = await db.SortedSetRangeByRankAsync(positionKey).ConfigureAwait(false);
         var count = itemIds.Length;
 
-        // Delete all item data
-        foreach (var itemId in itemIds)
+        if (count == 0)
         {
-            var idString = (string?)itemId;
-            if (idString is not null && Guid.TryParse(idString, out var id))
-            {
-                var itemKey = GetItemKey(guildId, id);
-                await db.KeyDeleteAsync(itemKey).ConfigureAwait(false);
-            }
+            return 0;
+        }
+
+        // Batch delete all item keys
+        var itemKeys = itemIds
+            .Where(itemId => (string?)itemId is not null && Guid.TryParse((string?)itemId, out _))
+            .Select(itemId => (RedisKey)GetItemKey(guildId, Guid.Parse((string)itemId!)))
+            .ToArray();
+
+        if (itemKeys.Length > 0)
+        {
+            await db.KeyDeleteAsync(itemKeys).ConfigureAwait(false);
         }
 
         // Clear sorted set
@@ -308,30 +374,40 @@ public sealed class RedisQueueStore : IQueueStore, IAsyncDisposable
         var db = await GetDatabaseAsync().ConfigureAwait(false);
         var itemKey = GetItemKey(model.GuildId, model.Id);
         var positionKey = GetPositionKey(model.GuildId);
-
-        // Shift existing items at and after the insertion point
-        var existingItems = await db.SortedSetRangeByRankWithScoresAsync(positionKey).ConfigureAwait(false);
-        var updates = new List<SortedSetEntry>();
-
-        foreach (var item in existingItems)
-        {
-            if (item.Score >= model.Position)
-            {
-                updates.Add(new SortedSetEntry(item.Element, item.Score + 1));
-            }
-        }
-
-        if (updates.Count > 0)
-        {
-            await db.SortedSetAddAsync(positionKey, updates.ToArray()).ConfigureAwait(false);
-        }
-
-        // Store item data
         var json = JsonSerializer.Serialize(model, JsonOptions);
-        await db.StringSetAsync(itemKey, json).ConfigureAwait(false);
 
-        // Add to sorted set at the specified position
-        await db.SortedSetAddAsync(positionKey, model.Id.ToString(), model.Position).ConfigureAwait(false);
+        // Use Lua script to make the operation atomic
+        var script = @"
+            local positionKey = KEYS[1]
+            local itemKey = KEYS[2]
+            local itemId = ARGV[1]
+            local position = tonumber(ARGV[2])
+            local itemData = ARGV[3]
+            
+            -- Get all items with score >= position
+            local items = redis.call('ZRANGEBYSCORE', positionKey, position, '+inf', 'WITHSCORES')
+            
+            -- Increment scores by 1
+            for i = 1, #items, 2 do
+                local member = items[i]
+                local score = tonumber(items[i + 1])
+                redis.call('ZADD', positionKey, score + 1, member)
+            end
+            
+            -- Store item data
+            redis.call('SET', itemKey, itemData)
+            
+            -- Add to sorted set at position
+            redis.call('ZADD', positionKey, position, itemId)
+            
+            return 1
+        ";
+
+        await db.ScriptEvaluateAsync(
+            script,
+            new RedisKey[] { positionKey, itemKey },
+            new RedisValue[] { model.Id.ToString(), model.Position, json }
+        ).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
