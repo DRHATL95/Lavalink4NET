@@ -40,7 +40,7 @@ public sealed class InactivityTrackingServiceTests
         // Act
         var trackingInformation = await inactivityTrackingService
             .GetPlayerAsync(player)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.Equal(PlayerTrackingStatus.NotTracked, trackingInformation.Status);
@@ -69,14 +69,14 @@ public sealed class InactivityTrackingServiceTests
 
         await inactivityTrackingService
             .StartAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         inactivityTracker.Report(active: false);
 
         // Assert
         var trackingInformation = await inactivityTrackingService
             .GetPlayerAsync(player)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         Assert.Equal(PlayerTrackingStatus.Tracked, trackingInformation.Status);
     }
@@ -104,14 +104,14 @@ public sealed class InactivityTrackingServiceTests
 
         await inactivityTrackingService
             .StartAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         inactivityTracker.Report(active: true);
 
         // Assert
         var trackingInformation = await inactivityTrackingService
             .GetPlayerAsync(player)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         Assert.Equal(PlayerTrackingStatus.NotTracked, trackingInformation.Status);
     }
@@ -139,7 +139,7 @@ public sealed class InactivityTrackingServiceTests
 
         await inactivityTrackingService
             .StartAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         inactivityTracker.Report(active: false);
         inactivityTracker.Report(active: true);
@@ -147,7 +147,7 @@ public sealed class InactivityTrackingServiceTests
         // Assert
         var trackingInformation = await inactivityTrackingService
             .GetPlayerAsync(player)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         Assert.Equal(PlayerTrackingStatus.NotTracked, trackingInformation.Status);
     }
@@ -185,7 +185,7 @@ public sealed class InactivityTrackingServiceTests
 
         await inactivityTrackingService
             .StartAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         inactivityTracker1.Report(active: false);
         inactivityTracker2.Report(active: false);
@@ -227,7 +227,7 @@ public sealed class InactivityTrackingServiceTests
 
         await inactivityTrackingService
             .StartAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         inactivityTracker1.Report(active: false);
         inactivityTracker2.Report(active: false);
@@ -269,7 +269,7 @@ public sealed class InactivityTrackingServiceTests
 
         await inactivityTrackingService
             .StartAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         inactivityTracker1.Report(active: false);
         inactivityTracker2.Report(active: false);
@@ -305,7 +305,7 @@ public sealed class InactivityTrackingServiceTests
 
         await inactivityTrackingService
             .StartAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         var initialTimestamp = systemClock.UtcNow;
 
@@ -318,7 +318,7 @@ public sealed class InactivityTrackingServiceTests
         // Assert
         var trackingInformation = await inactivityTrackingService
             .GetPlayerAsync(player)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         Assert.Equal(PlayerTrackingStatus.Tracked, trackingInformation.Status);
 

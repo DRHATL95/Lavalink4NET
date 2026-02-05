@@ -1,4 +1,6 @@
-﻿namespace Lavalink4NET.Cluster;
+﻿using Lavalink4NET.Events;
+
+namespace Lavalink4NET.Cluster;
 
 using System.Collections.Immutable;
 using Lavalink4NET.Clients;
@@ -145,6 +147,9 @@ internal sealed class LavalinkClusterNode : ILavalinkNode
             var clientInformation = await _readyTask
                 .WaitAsync(shutdownCancellationToken)
                 .ConfigureAwait(false);
+            
+            _node.SocketConnectionClosed += OnNodeSocketConnectionClosed;
+            _node.SocketConnectionReady += OnNodeSocketConnectionReady;
 
             var nodeTask = _node.RunAsync(clientInformation, _shutdownCancellationToken).AsTask();
 
@@ -158,11 +163,24 @@ internal sealed class LavalinkClusterNode : ILavalinkNode
         }
         finally
         {
+            _node.SocketConnectionClosed -= OnNodeSocketConnectionClosed;
+            _node.SocketConnectionReady -= OnNodeSocketConnectionReady;
+
             var exitStatus = _shutdownCancellationToken.IsCancellationRequested
                 ? LavalinkNodeStatus.OnDemand
                 : LavalinkNodeStatus.Unavailable;
 
             await UpdateStatusAsync(exitStatus, shutdownCancellationToken);
         }
+    }
+
+    private async Task OnNodeSocketConnectionReady(object sender, EventArgs eventargs)
+    {
+        await UpdateStatusAsync(LavalinkNodeStatus.Available, _shutdownCancellationToken);
+    }
+
+    private async Task OnNodeSocketConnectionClosed(object sender, ConnectionClosedEventArgs eventargs)
+    {
+        await UpdateStatusAsync(LavalinkNodeStatus.Degraded, _shutdownCancellationToken);
     }
 }

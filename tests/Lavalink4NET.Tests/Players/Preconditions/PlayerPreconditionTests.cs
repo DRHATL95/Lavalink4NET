@@ -18,7 +18,7 @@ public sealed class PlayerPreconditionTests
         // Act
         var result = await PlayerPrecondition.Playing
             .CheckAsync(player)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(result);
@@ -33,7 +33,7 @@ public sealed class PlayerPreconditionTests
         // Act
         var result = await PlayerPrecondition.Playing
             .CheckAsync(player)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.False(result);
@@ -48,7 +48,7 @@ public sealed class PlayerPreconditionTests
         // Act
         var result = await PlayerPrecondition.NotPlaying
             .CheckAsync(player)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(result);
@@ -63,7 +63,7 @@ public sealed class PlayerPreconditionTests
         // Act
         var result = await PlayerPrecondition.NotPlaying
             .CheckAsync(player)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.False(result);
@@ -78,7 +78,7 @@ public sealed class PlayerPreconditionTests
         // Act
         var result = await PlayerPrecondition.Paused
             .CheckAsync(player)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(result);
@@ -93,7 +93,7 @@ public sealed class PlayerPreconditionTests
         // Act
         var result = await PlayerPrecondition.Paused
             .CheckAsync(player)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.False(result);
@@ -108,7 +108,7 @@ public sealed class PlayerPreconditionTests
         // Act
         var result = await PlayerPrecondition.NotPaused
             .CheckAsync(player)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(result);
@@ -123,7 +123,7 @@ public sealed class PlayerPreconditionTests
         // Act
         var result = await PlayerPrecondition.NotPaused
             .CheckAsync(player)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.False(result);
@@ -138,7 +138,7 @@ public sealed class PlayerPreconditionTests
         // Act
         var result = await PlayerPrecondition.QueueEmpty
             .CheckAsync(player)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(result);
@@ -153,7 +153,7 @@ public sealed class PlayerPreconditionTests
         // Act
         var result = await PlayerPrecondition.QueueEmpty
             .CheckAsync(player)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.False(result);
@@ -168,7 +168,7 @@ public sealed class PlayerPreconditionTests
         // Act
         var result = await PlayerPrecondition.QueueNotEmpty
             .CheckAsync(player)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.True(result);
@@ -183,7 +183,7 @@ public sealed class PlayerPreconditionTests
         // Act
         var result = await PlayerPrecondition.QueueNotEmpty
             .CheckAsync(player)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.False(result);

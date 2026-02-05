@@ -21,16 +21,17 @@ jobs:
       with:
         fetch-depth: 0
     
-    - name: Install .NET 8.0
-      uses: actions/setup-dotnet@v3
+    - name: Install .NET SDK
+      uses: actions/setup-dotnet@v4
       with:
-        dotnet-version: 8.0.x
+        dotnet-version: | 
+          10.0.x
         
     - name: Restore dependencies
       run: dotnet restore src/Lavalink4NET.sln
       
     - name: Build
-      run: dotnet build src/Lavalink4NET.sln --no-restore --configuration ${{ matrix.configuration }} /property:Version=4.0.21
+      run: dotnet build src/Lavalink4NET.sln --no-restore --configuration ${{ matrix.configuration }} /property:Version=4.1.0
 
     - name: Run tests
       working-directory: ci
@@ -40,7 +41,7 @@ jobs:
     - name: Download artifact
       id: download-artifact
       if: github.event_name == 'pull_request' && matrix.configuration == 'Release'
-      uses: dawidd6/action-download-artifact@v2
+      uses: dawidd6/action-download-artifact@v6
       with:
         github_token: ${{secrets.GITHUB_TOKEN}}
         commit: ${{github.event.pull_request.base.sha}}
@@ -50,6 +51,7 @@ jobs:
         if_no_artifact_found: ignore
 
     - name: Code Coverage Report
+      if: matrix.configuration == 'Release'
       run: |
         dotnet tool install -g dotnet-reportgenerator-globaltool
         reportgenerator -reports:coverage/**/coverage.cobertura.xml -targetdir:coverage/ -sourcedirs:src/ "-reporttypes:TextSummary;HtmlSummary;MarkdownDeltaSummary" -historydir:coverage/history
@@ -57,6 +59,7 @@ jobs:
         
     - name: Archive code coverage results
       uses: actions/upload-artifact@v4
+      if: matrix.configuration == 'Release'
       continue-on-error: true
       with:
         name: CoverageSummary.html
@@ -64,6 +67,7 @@ jobs:
         
     - name: Archive code coverage history
       uses: actions/upload-artifact@v4
+      if: matrix.configuration == 'Release'
       continue-on-error: true
       with:
         name: CoverageHistory.html
@@ -71,19 +75,22 @@ jobs:
         
     - name: Add Coverage Pull Request Comment
       uses: marocchino/sticky-pull-request-comment@v2
-      if: github.event_name == 'pull_request'
+      if: github.event_name == 'pull_request' && matrix.configuration == 'Release'
       continue-on-error: true
       with:
         recreate: true
         path: coverage/DeltaSummary.md
 
     - name: Upload NuGet artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4.6.1
       with:
         name: NuGet Packages-${{ matrix.configuration }}
-        path: '**/*.nupkg'
+        path: |
+          artifacts/package/${{ matrix.configuration == 'Release' && 'release' || 'debug' }}/*.nupkg
+          artifacts/package/${{ matrix.configuration == 'Release' && 'release' || 'debug' }}/*.snupkg
 
     - name: Publish NuGet Packages
-      if: matrix.configuration == 'Release'
-      run: find . -type f -name "*.nupkg" -exec dotnet nuget push --api-key "${{ secrets.NUGET_API_KEY }}" --source https://api.nuget.org/v3/index.json --skip-duplicate {} ';'
-      shell: bash
+      if: matrix.configuration == 'Release' && github.ref == 'refs/heads/dev'
+      run: |
+          dotnet nuget push "artifacts/package/${{ matrix.configuration == 'Release' && 'release' || 'debug' }}/*.nupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate
+          dotnet nuget push "artifacts/package/${{ matrix.configuration == 'Release' && 'release' || 'debug' }}/*.snupkg" --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json --skip-duplicate || true

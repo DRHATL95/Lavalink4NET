@@ -137,7 +137,7 @@ file static class ReflectionHelpers
                     typeof(ulong),
          }, null);
 
-        var socketGuild = (SocketGuild)socketGuildCtor.Invoke(new object[] {
+        var socketGuild = (SocketGuild)socketGuildCtor!.Invoke(new object[] {
                 discordSocketClient, id,
             });
         return socketGuild;
@@ -158,7 +158,7 @@ file static class ReflectionHelpers
                 socketGuild, socketGlobalUser
             };
 
-        var socketGuildUser = (SocketGuildUser)socketGuildUserCtor.Invoke(parameters);
+        var socketGuildUser = (SocketGuildUser)socketGuildUserCtor!.Invoke(parameters);
 
         return socketGuildUser;
     }

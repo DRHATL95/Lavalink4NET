@@ -15,9 +15,11 @@ internal class PlayerManagerMock : IPlayerManager
 {
     private readonly IReadOnlyDictionary<ulong, ILavalinkPlayer> _players;
 
+#pragma warning disable CS0067
     public event AsyncEventHandler<PlayerCreatedEventArgs>? PlayerCreated;
     public event AsyncEventHandler<PlayerDestroyedEventArgs>? PlayerDestroyed;
     public event AsyncEventHandler<PlayerStateChangedEventArgs>? PlayerStateChanged;
+#pragma warning restore CS0067
 
     public PlayerManagerMock(IDiscordClientWrapper discordClient, IEnumerable<ILavalinkPlayer> players)
     {
@@ -51,6 +53,13 @@ internal class PlayerManagerMock : IPlayerManager
     public ValueTask<TPlayer> JoinAsync<TPlayer, TOptions>(ulong guildId, ulong voiceChannelId, PlayerFactory<TPlayer, TOptions> playerFactory, IOptions<TOptions> options, CancellationToken cancellationToken = default)
         where TPlayer : ILavalinkPlayer
         where TOptions : LavalinkPlayerOptions
+    {
+        throw new NotImplementedException();
+    }
+    
+    public ValueTask<TPlayer> JoinAsync<TPlayer, TOptions>(ulong guildId, ulong voiceChannelId, PlayerFactory<TPlayer, TOptions> playerFactory,
+        IOptions<TOptions> options, ILavalinkSessionProvider? overridenLavalinkSessionProvider,
+        CancellationToken cancellationToken = default) where TPlayer : ILavalinkPlayer where TOptions : LavalinkPlayerOptions
     {
         throw new NotImplementedException();
     }
