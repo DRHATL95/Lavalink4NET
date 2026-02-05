@@ -39,8 +39,15 @@ public class PersistentQueuedPlayer : QueuedLavalinkPlayer
     private static IPlayerProperties<QueuedLavalinkPlayer, QueuedLavalinkPlayerOptions> CreateProperties(
         IPlayerProperties<PersistentQueuedPlayer, PersistentQueuedPlayerOptions> properties)
     {
-        var factory = properties.ServiceProvider?.GetService<IPersistentQueueFactory>();
-        var queue = factory?.Create(properties.InitialState.GuildId);
+        var serviceProvider = properties.ServiceProvider
+            ?? throw new System.InvalidOperationException(
+                "PersistentQueuedPlayer requires a non-null ServiceProvider with IPersistentQueueFactory registered.");
+
+        var factory = serviceProvider.GetService<IPersistentQueueFactory>()
+            ?? throw new System.InvalidOperationException(
+                "PersistentQueuedPlayer requires IPersistentQueueFactory to be registered in the ServiceProvider.");
+
+        var queue = factory.Create(properties.InitialState.GuildId);
 
         return new PlayerPropertiesAdapter(properties, queue);
     }
@@ -82,8 +89,8 @@ public class PersistentQueuedPlayer : QueuedLavalinkPlayer
         public ITrackQueueItem? InitialTrack => _inner.InitialTrack;
         public string Label => _inner.Label;
         public Microsoft.Extensions.Logging.ILogger<QueuedLavalinkPlayer> Logger =>
-            (Microsoft.Extensions.Logging.ILogger<QueuedLavalinkPlayer>)_inner.Logger;
-        public ISystemClock SystemClock => _inner.SystemClock;
+            (Microsoft.Extensions.Logging.ILogger<QueuedLavalinkPlayer>)(object)_inner.Logger;
+        public Microsoft.Extensions.Internal.ISystemClock SystemClock => _inner.SystemClock;
         public Microsoft.Extensions.Options.IOptions<QueuedLavalinkPlayerOptions> Options =>
             Microsoft.Extensions.Options.Options.Create(_options);
         public System.IServiceProvider? ServiceProvider => _inner.ServiceProvider;

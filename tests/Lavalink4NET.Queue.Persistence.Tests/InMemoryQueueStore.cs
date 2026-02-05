@@ -80,6 +80,16 @@ public sealed class InMemoryQueueStore : IQueueStore
             }
 
             queue.Remove(item);
+
+            // Update positions of remaining items
+            for (var i = 0; i < queue.Count; i++)
+            {
+                if (queue[i].Position > item.Position)
+                {
+                    queue[i] = queue[i] with { Position = queue[i].Position - 1 };
+                }
+            }
+
             return ValueTask.FromResult(true);
         }
     }
@@ -101,6 +111,16 @@ public sealed class InMemoryQueueStore : IQueueStore
             }
 
             queue.Remove(item);
+
+            // Update positions of remaining items
+            for (var i = 0; i < queue.Count; i++)
+            {
+                if (queue[i].Position > position)
+                {
+                    queue[i] = queue[i] with { Position = queue[i].Position - 1 };
+                }
+            }
+
             return ValueTask.FromResult(true);
         }
     }
@@ -123,6 +143,16 @@ public sealed class InMemoryQueueStore : IQueueStore
             foreach (var item in itemsToRemove)
             {
                 queue.Remove(item);
+            }
+
+            // Update positions of items after the removed range
+            var maxRemovedPosition = startPosition + count - 1;
+            for (var i = 0; i < queue.Count; i++)
+            {
+                if (queue[i].Position > maxRemovedPosition)
+                {
+                    queue[i] = queue[i] with { Position = queue[i].Position - count };
+                }
             }
         }
 
@@ -223,6 +253,13 @@ public sealed class InMemoryQueueStore : IQueueStore
             }
 
             queue.Remove(item);
+
+            // Update positions of remaining items
+            for (var i = 0; i < queue.Count; i++)
+            {
+                queue[i] = queue[i] with { Position = queue[i].Position - 1 };
+            }
+
             return ValueTask.FromResult<QueuedTrackModel?>(item);
         }
     }

@@ -91,7 +91,14 @@ public sealed class EfCoreQueueStore<TContext> : IQueueStore
         }
 
         context.QueuedTracks.Remove(entity);
+
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        // Decrement positions of all items after the removed entity
+        await context.QueuedTracks
+            .Where(e => e.GuildId == guildId && e.Position > entity.Position)
+            .ExecuteUpdateAsync(s => s.SetProperty(e => e.Position, e => e.Position - 1), cancellationToken)
+            .ConfigureAwait(false);
 
         return true;
     }
@@ -114,7 +121,14 @@ public sealed class EfCoreQueueStore<TContext> : IQueueStore
         }
 
         context.QueuedTracks.Remove(entity);
+
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        // Decrement positions of all items after the removed position
+        await context.QueuedTracks
+            .Where(e => e.GuildId == guildId && e.Position > position)
+            .ExecuteUpdateAsync(s => s.SetProperty(e => e.Position, e => e.Position - 1), cancellationToken)
+            .ConfigureAwait(false);
 
         return true;
     }
@@ -134,7 +148,14 @@ public sealed class EfCoreQueueStore<TContext> : IQueueStore
             .ConfigureAwait(false);
 
         context.QueuedTracks.RemoveRange(entities);
+
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        // Update positions of items after the removed range
+        await context.QueuedTracks
+            .Where(e => e.GuildId == guildId && e.Position >= startPosition + count)
+            .ExecuteUpdateAsync(s => s.SetProperty(e => e.Position, e => e.Position - count), cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -243,9 +264,16 @@ public sealed class EfCoreQueueStore<TContext> : IQueueStore
         }
 
         var model = ToModel(entity);
+        var dequeuedPosition = entity.Position;
         context.QueuedTracks.Remove(entity);
 
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        // Decrement positions of all items after the dequeued item
+        await context.QueuedTracks
+            .Where(e => e.GuildId == guildId && e.Position > dequeuedPosition)
+            .ExecuteUpdateAsync(s => s.SetProperty(e => e.Position, e => e.Position - 1), cancellationToken)
+            .ConfigureAwait(false);
 
         return model;
     }
