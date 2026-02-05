@@ -268,13 +268,14 @@ public sealed class EfCoreQueueStore<TContext> : IQueueStore
         }
 
         var model = ToModel(entity);
+        var dequeuedPosition = entity.Position;
         context.QueuedTracks.Remove(entity);
 
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
-        // Decrement positions of all remaining items after the dequeued item
+        // Decrement positions of all items after the dequeued item
         await context.QueuedTracks
-            .Where(e => e.GuildId == guildId)
+            .Where(e => e.GuildId == guildId && e.Position > dequeuedPosition)
             .ExecuteUpdateAsync(s => s.SetProperty(e => e.Position, e => e.Position - 1), cancellationToken)
             .ConfigureAwait(false);
 
