@@ -152,14 +152,10 @@ public sealed class EfCoreQueueStore<TContext> : IQueueStore
         await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         // Update positions of items after the removed range
-        if (entities.Count > 0)
-        {
-            var maxRemovedPosition = entities.Max(e => e.Position);
-            await context.QueuedTracks
-                .Where(e => e.GuildId == guildId && e.Position > maxRemovedPosition)
-                .ExecuteUpdateAsync(s => s.SetProperty(e => e.Position, e => e.Position - entities.Count), cancellationToken)
-                .ConfigureAwait(false);
-        }
+        await context.QueuedTracks
+            .Where(e => e.GuildId == guildId && e.Position >= startPosition + count)
+            .ExecuteUpdateAsync(s => s.SetProperty(e => e.Position, e => e.Position - count), cancellationToken)
+            .ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
