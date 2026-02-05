@@ -23,8 +23,9 @@ public sealed class PersistentTrackQueue : ITrackQueue
     private readonly object _syncRoot = new();
 
     // Local cache for quick access (synchronized with store)
-    private List<ITrackQueueItem> _cachedItems;
-    private List<Guid> _cachedIds;
+    private readonly List<ITrackQueueItem> _cachedItems;
+    private readonly List<Guid> _cachedIds;
+    private static readonly SemaphoreSlim _initializationSemaphore = new(1, 1);
     private bool _isInitialized;
 
     /// <summary>
@@ -110,14 +111,25 @@ public sealed class PersistentTrackQueue : ITrackQueue
                 _cachedItems.Clear();
                 _cachedIds.Clear();
 
-                foreach (var model in models.OrderBy(m => m.Position))
+                try
                 {
-                    var item = _serializer.Deserialize(model);
-                    _cachedItems.Add(item);
-                    _cachedIds.Add(model.Id);
-                }
+                    foreach (var model in models.OrderBy(m => m.Position))
+                    {
+                        var item = _serializer.Deserialize(model);
+                        _cachedItems.Add(item);
+                        _cachedIds.Add(model.Id);
+                    }
 
-                _isInitialized = true;
+                    _isInitialized = true;
+                }
+                finally
+                {
+                    if (!_isInitialized)
+                    {
+                        _cachedItems.Clear();
+                        _cachedIds.Clear();
+                    }
+                }
             }
 
             _logger?.LogDebug("Initialized persistent queue for guild {GuildId} with {Count} items", _guildId, models.Count);
@@ -273,7 +285,7 @@ public sealed class PersistentTrackQueue : ITrackQueue
             return;
         }
 
-        var models = new List<QueuedTrackModel>(itemsList.Count);
+        IReadOnlyList<Guid> updatedOrder;
 
         lock (_syncRoot)
         {
@@ -281,17 +293,15 @@ public sealed class PersistentTrackQueue : ITrackQueue
             foreach (var item in itemsList)
             {
                 var model = _serializer.Serialize(item, _guildId, insertIndex);
-                models.Add(model);
                 _cachedItems.Insert(insertIndex, item);
                 _cachedIds.Insert(insertIndex, model.Id);
                 insertIndex++;
             }
+
+            updatedOrder = _cachedIds.ToList();
         }
 
-        foreach (var model in models)
-        {
-            await _store.InsertAsync(model, cancellationToken).ConfigureAwait(false);
-        }
+        await _store.UpdatePositionsAsync(_guildId, updatedOrder, cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -427,10 +437,7 @@ public sealed class PersistentTrackQueue : ITrackQueue
             }
         }
 
-        foreach (var id in idsToRemove)
-        {
-            await _store.RemoveAsync(_guildId, id, cancellationToken).ConfigureAwait(false);
-        }
+        await Task.WhenAll(idsToRemove.Select(id => _store.RemoveAsync(_guildId, id, cancellationToken).AsTask())).ConfigureAwait(false);
 
         return idsToRemove.Count;
     }
@@ -484,10 +491,7 @@ public sealed class PersistentTrackQueue : ITrackQueue
             difference = previousCount - _cachedItems.Count;
         }
 
-        foreach (var id in idsToRemove)
-        {
-            await _store.RemoveAsync(_guildId, id, cancellationToken).ConfigureAwait(false);
-        }
+        await Task.WhenAll(idsToRemove.Select(id => _store.RemoveAsync(_guildId, id, cancellationToken).AsTask())).ConfigureAwait(false);
 
         return difference;
     }
@@ -543,7 +547,18 @@ public sealed class PersistentTrackQueue : ITrackQueue
     {
         if (!_isInitialized)
         {
-            await InitializeAsync(cancellationToken).ConfigureAwait(false);
+            await _initializationSemaphore.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                if (!_isInitialized)
+                {
+                    await InitializeAsync(cancellationToken).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                _initializationSemaphore.Release();
+            }
         }
     }
 }
