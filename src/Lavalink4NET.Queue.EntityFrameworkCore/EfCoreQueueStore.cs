@@ -92,13 +92,13 @@ public sealed class EfCoreQueueStore<TContext> : IQueueStore
 
         context.QueuedTracks.Remove(entity);
 
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
         // Decrement positions of all items after the removed entity
         await context.QueuedTracks
             .Where(e => e.GuildId == guildId && e.Position > entity.Position)
             .ExecuteUpdateAsync(s => s.SetProperty(e => e.Position, e => e.Position - 1), cancellationToken)
             .ConfigureAwait(false);
-
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return true;
     }
@@ -122,13 +122,13 @@ public sealed class EfCoreQueueStore<TContext> : IQueueStore
 
         context.QueuedTracks.Remove(entity);
 
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
         // Decrement positions of all items after the removed position
         await context.QueuedTracks
             .Where(e => e.GuildId == guildId && e.Position > position)
             .ExecuteUpdateAsync(s => s.SetProperty(e => e.Position, e => e.Position - 1), cancellationToken)
             .ConfigureAwait(false);
-
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return true;
     }
@@ -149,6 +149,8 @@ public sealed class EfCoreQueueStore<TContext> : IQueueStore
 
         context.QueuedTracks.RemoveRange(entities);
 
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
         // Update positions of items after the removed range
         if (entities.Count > 0)
         {
@@ -158,8 +160,6 @@ public sealed class EfCoreQueueStore<TContext> : IQueueStore
                 .ExecuteUpdateAsync(s => s.SetProperty(e => e.Position, e => e.Position - entities.Count), cancellationToken)
                 .ConfigureAwait(false);
         }
-
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
     /// <inheritdoc/>
@@ -270,13 +270,13 @@ public sealed class EfCoreQueueStore<TContext> : IQueueStore
         var model = ToModel(entity);
         context.QueuedTracks.Remove(entity);
 
-        // Decrement positions of all remaining items
+        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+
+        // Decrement positions of all remaining items after the dequeued item
         await context.QueuedTracks
             .Where(e => e.GuildId == guildId)
             .ExecuteUpdateAsync(s => s.SetProperty(e => e.Position, e => e.Position - 1), cancellationToken)
             .ConfigureAwait(false);
-
-        await context.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
 
         return model;
     }
