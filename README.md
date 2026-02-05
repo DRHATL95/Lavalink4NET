@@ -50,7 +50,7 @@
 ### Documentation
 
 > [!IMPORTANT]
-> You can find the documentation for Lavalink4NET v4 [here](https://lavalink4net.angelobreuer.de/docs/introduction/intro).
+> You can find the documentation for Lavalink4NET v4 [here](https://lavalink4net.com/introduction/intro).
 
 ### Components
 

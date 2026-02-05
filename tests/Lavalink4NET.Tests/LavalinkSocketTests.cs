@@ -65,9 +65,9 @@ public sealed class LavalinkSocketTests
         };
 
         // Act
-        using var socket = socketFactory.Create(Options.Create(options));
+        using var socket = socketFactory.Create(Options.Create(options))!;
         _ = socket.RunAsync(cancellationTokenSource.Token).AsTask();
-        await taskCompletionSource.Task.ConfigureAwait(false);
+        await taskCompletionSource.Task.ConfigureAwait(true);
 
         // Assert
         static void Verify(HttpContext httpContext)
@@ -117,13 +117,13 @@ public sealed class LavalinkSocketTests
             Uri = new UriBuilder(webHost.Urls.First()) { Scheme = "ws", }.Uri,
         };
 
-        using var socket = socketFactory.Create(Options.Create(options));
+        using var socket = socketFactory.Create(Options.Create(options))!;
         _ = socket.RunAsync().AsTask();
 
         // Act
         var payload = await socket
             .ReceiveAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         Assert.IsType<ReadyPayload>(payload);

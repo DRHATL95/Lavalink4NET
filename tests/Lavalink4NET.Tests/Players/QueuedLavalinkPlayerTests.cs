@@ -87,7 +87,7 @@ public sealed class QueuedLavalinkPlayerTests
         await player.Queue.AddAsync(new TrackQueueItem(new TrackReference("track1")));
 
         // Act
-        await player.SkipAsync().ConfigureAwait(false);
+        await player.SkipAsync().ConfigureAwait(true);
 
         // Assert
         apiClientMock.Verify();
@@ -160,7 +160,7 @@ public sealed class QueuedLavalinkPlayerTests
         await player.Queue.AddAsync(new TrackQueueItem(new TrackReference("track2")));
 
         // Act
-        await player.SkipAsync(count: 2).ConfigureAwait(false);
+        await player.SkipAsync(count: 2).ConfigureAwait(true);
 
         // Assert
         apiClientMock.Verify();
@@ -228,7 +228,7 @@ public sealed class QueuedLavalinkPlayerTests
         await player.Queue.AddAsync(new TrackQueueItem(new TrackReference("track1")));
 
         // Act
-        await player.SkipAsync(count: 2).ConfigureAwait(false);
+        await player.SkipAsync(count: 2).ConfigureAwait(true);
 
         // Assert
         apiClientMock.Verify();
@@ -307,7 +307,7 @@ public sealed class QueuedLavalinkPlayerTests
         // Act
         await listener
             .NotifyTrackEndedAsync(player.CurrentTrack!, TrackEndReason.Finished)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         apiClientMock.Verify();
@@ -391,7 +391,7 @@ public sealed class QueuedLavalinkPlayerTests
         // Act
         await listener
             .NotifyTrackEndedAsync(player.CurrentTrack!, TrackEndReason.Finished)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         apiClientMock.Verify();
@@ -473,7 +473,7 @@ public sealed class QueuedLavalinkPlayerTests
         // Act
         await player
             .SkipAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         apiClientMock.Verify();
@@ -544,7 +544,7 @@ public sealed class QueuedLavalinkPlayerTests
         // Act
         await player
             .SkipAsync()
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         // Assert
         apiClientMock.Verify();

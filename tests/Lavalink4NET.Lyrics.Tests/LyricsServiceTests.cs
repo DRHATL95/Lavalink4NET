@@ -34,7 +34,7 @@ public sealed class LyricsServiceTests
 
         var lyrics = await lyricsService
             .GetLyricsAsync(track, CancellationToken.None)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         Assert.Equal("Test", lyrics);
     }
@@ -70,11 +70,11 @@ public sealed class LyricsServiceTests
 
         _ = await lyricsService
             .GetLyricsAsync(track, CancellationToken.None)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         _ = await lyricsService
             .GetLyricsAsync(track, CancellationToken.None)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         Assert.Equal(1, requestCounter);
     }
@@ -108,7 +108,7 @@ public sealed class LyricsServiceTests
 
         var result = await lyricsService
             .GetLyricsAsync(track, CancellationToken.None)
-            .ConfigureAwait(false);
+            .ConfigureAwait(true);
 
         Assert.Null(result);
     }

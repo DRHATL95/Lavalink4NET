@@ -161,7 +161,7 @@ public class QueuedLavalinkPlayer : LavalinkPlayer, IQueuedLavalinkPlayer
                 "The count must not be negative.");
         }
 
-        return PlayNextAsync(count, _respectTrackRepeatOnSkip, cancellationToken);
+        return PlayNextAsync(count, _respectTrackRepeatOnSkip, CurrentItem, cancellationToken);
     }
 
     public override async ValueTask StopAsync(CancellationToken cancellationToken = default)
@@ -216,7 +216,7 @@ public class QueuedLavalinkPlayer : LavalinkPlayer, IQueuedLavalinkPlayer
 
         if (endReason.MayStartNext() && AutoPlay)
         {
-            await PlayNextAsync(skipCount: 1, respectTrackRepeat: true, cancellationToken).ConfigureAwait(false);
+            await PlayNextAsync(skipCount: 1, respectTrackRepeat: true, currentItem: queueItem, cancellationToken).ConfigureAwait(false);
         }
         else if (endReason is not TrackEndReason.Replaced)
         {
@@ -224,12 +224,11 @@ public class QueuedLavalinkPlayer : LavalinkPlayer, IQueuedLavalinkPlayer
         }
     }
 
-    private async ValueTask PlayNextAsync(int skipCount = 1, bool respectTrackRepeat = false, CancellationToken cancellationToken = default)
+    private async ValueTask PlayNextAsync(int skipCount = 1, bool respectTrackRepeat = false,
+        ITrackQueueItem? currentItem = null, CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         EnsureNotDestroyed();
-
-        var currentItem = CurrentItem;
 
         var respectHistory = _trackHistoryBehavior switch
         {
@@ -245,7 +244,7 @@ public class QueuedLavalinkPlayer : LavalinkPlayer, IQueuedLavalinkPlayer
                 .ConfigureAwait(false);
         }
 
-        var track = await GetNextTrackAsync(skipCount, respectTrackRepeat, respectHistory, cancellationToken).ConfigureAwait(false);
+        var track = await GetNextTrackAsync(skipCount, respectTrackRepeat: respectTrackRepeat, respectHistory: respectHistory, currentItem: currentItem, cancellationToken: cancellationToken).ConfigureAwait(false);
 
         if (!track.IsPresent)
         {
@@ -265,24 +264,25 @@ public class QueuedLavalinkPlayer : LavalinkPlayer, IQueuedLavalinkPlayer
         int count = 1,
         bool respectTrackRepeat = false,
         bool respectHistory = false,
+        ITrackQueueItem? currentItem = null,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         var track = default(Optional<ITrackQueueItem>);
 
-        if (CurrentItem is not null)
+        if (currentItem is not null)
         {
             if (Queue.HasHistory && respectHistory)
             {
                 await Queue.History
-                    .AddAsync(CurrentItem, cancellationToken)
+                    .AddAsync(currentItem, cancellationToken)
                     .ConfigureAwait(false);
             }
 
             if (respectTrackRepeat && RepeatMode is TrackRepeatMode.Track)
             {
-                return new Optional<ITrackQueueItem>(CurrentItem);
+                return new Optional<ITrackQueueItem>(currentItem);
             }
         }
 

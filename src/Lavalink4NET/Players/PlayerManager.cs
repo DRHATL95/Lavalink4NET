@@ -116,8 +116,15 @@ internal sealed class PlayerManager : IPlayerManager, IDisposable, IPlayerLifecy
         return _handles.TryGetValue(guildId, out var handle)
             && handle is { Player.State: not PlayerState.Destroyed };
     }
+    
+    public ValueTask<TPlayer> JoinAsync<TPlayer, TOptions>(ulong guildId, ulong voiceChannelId, PlayerFactory<TPlayer, TOptions> playerFactory, IOptions<TOptions> options, CancellationToken cancellationToken = default)
+        where TPlayer : ILavalinkPlayer
+        where TOptions : LavalinkPlayerOptions
+    {
+        return JoinAsync(guildId, voiceChannelId, playerFactory, options, null, cancellationToken);
+    }
 
-    public async ValueTask<TPlayer> JoinAsync<TPlayer, TOptions>(ulong guildId, ulong voiceChannelId, PlayerFactory<TPlayer, TOptions> playerFactory, IOptions<TOptions> options, CancellationToken cancellationToken = default)
+    public async ValueTask<TPlayer> JoinAsync<TPlayer, TOptions>(ulong guildId, ulong voiceChannelId, PlayerFactory<TPlayer, TOptions> playerFactory, IOptions<TOptions> options, ILavalinkSessionProvider? overridenLavalinkSessionProvider, CancellationToken cancellationToken = default)
         where TPlayer : ILavalinkPlayer
         where TOptions : LavalinkPlayerOptions
     {
@@ -125,9 +132,15 @@ internal sealed class PlayerManager : IPlayerManager, IDisposable, IPlayerLifecy
 
         LavalinkPlayerHandle<TPlayer, TOptions> Create(ulong guildId)
         {
+            var playerContext = _playerContext;
+            if (overridenLavalinkSessionProvider is not null)
+            {
+                playerContext = playerContext with { SessionProvider = overridenLavalinkSessionProvider };
+            }
+            
             return new LavalinkPlayerHandle<TPlayer, TOptions>(
                 guildId: guildId,
-                playerContext: _playerContext,
+                playerContext: playerContext,
                 playerFactory: playerFactory,
                 options: options,
                 logger: _loggerFactory.CreateLogger<TPlayer>());
@@ -296,7 +309,7 @@ internal sealed class PlayerManager : IPlayerManager, IDisposable, IPlayerLifecy
             return PlayerResult<TPlayer>.BotNotConnected;
         }
 
-        player = await JoinAsync(guildId, memberVoiceChannel.Value, playerFactory, options, cancellationToken).ConfigureAwait(false);
+        player = await JoinAsync(guildId, memberVoiceChannel.Value, playerFactory, options, retrieveOptions.OverridenSessionProvider, cancellationToken).ConfigureAwait(false);
 
         return await CheckPreconditionsAsync(player, preconditions, cancellationToken).ConfigureAwait(false);
     }
@@ -312,11 +325,10 @@ internal sealed class PlayerManager : IPlayerManager, IDisposable, IPlayerLifecy
 
         await using var _ = playerHandle.ConfigureAwait(false);
 
-        Debug.Assert(playerHandle.Player is not null);
-        Debug.Assert(playerHandle.Player is { State: PlayerState.Destroyed, });
-
+        // Player can be null if lavalink node will throw while creating player
         if (playerHandle.Player is not null)
         {
+            Debug.Assert(playerHandle.Player is { State: PlayerState.Destroyed, });
             var eventArgs = new PlayerDestroyedEventArgs(playerHandle.Player);
 
             await PlayerDestroyed

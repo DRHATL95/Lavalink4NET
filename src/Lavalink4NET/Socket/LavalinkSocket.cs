@@ -134,7 +134,14 @@ internal sealed class LavalinkSocket : ILavalinkSocket
                 }
                 catch (Exception exception)
                 {
-                    _logger.FailedToConnect(Label, exception);
+                    if (attempt == 0)
+                    {
+                        _logger.FailedToConnectFirstTime(Label, exception);
+                    }
+                    else
+                    {
+                        _logger.FailedToConnect(Label, exception);
+                    }
 
                     var connectionClosedEventArgs = new ConnectionClosedEventArgs(
                         lavalinkSocket: this,
@@ -304,7 +311,7 @@ internal static partial class Logging
     [LoggerMessage(1, LogLevel.Debug, "[{Label}] Attempting to connect to Lavalink node...", EventName = nameof(AttemptingToConnect))]
     public static partial void AttemptingToConnect(this ILogger<LavalinkSocket> logger, string label);
 
-    [LoggerMessage(2, LogLevel.Debug, "[{Label}] Connection to Lavalink node established.", EventName = nameof(ConnectionEstablished))]
+    [LoggerMessage(2, LogLevel.Information, "[{Label}] Connection to Lavalink node established.", EventName = nameof(ConnectionEstablished))]
     public static partial void ConnectionEstablished(this ILogger<LavalinkSocket> logger, string label);
 
     [LoggerMessage(3, LogLevel.Debug, "[{Label}] Failed to connect to the Lavalink node.", EventName = nameof(FailedToConnect))]
@@ -318,4 +325,7 @@ internal static partial class Logging
 
     [LoggerMessage(6, LogLevel.Warning, "[{Label}] An error occurred while dispatching the ConnectionClosed event.", EventName = nameof(ErrorConnectionClosedEvent))]
     public static partial void ErrorConnectionClosedEvent(this ILogger<LavalinkSocket> logger, string label, Exception exception);
+    
+    [LoggerMessage(7, LogLevel.Warning, "[{Label}] Failed to connect to the Lavalink node.", EventName = nameof(FailedToConnectFirstTime))]
+    public static partial void FailedToConnectFirstTime(this ILogger<LavalinkSocket> logger, string label, Exception exception);
 }

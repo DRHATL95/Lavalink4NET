@@ -12,12 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Collections.Immutable" Version="8.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Lavalink4NET\Lavalink4NET.csproj" />
   </ItemGroup>
 
-	<Import Project="../Lavalink4NET.targets" />
 </Project>

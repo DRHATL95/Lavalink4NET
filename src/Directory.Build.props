@@ -1,0 +1,46 @@
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <Import Project="../Directory.Build.props" />
+
+    <Import Project="SourceLink.Build.props" Condition="'$(DisableSourceLink)' == ''"/>
+
+    <PropertyGroup>
+        <TargetFrameworks Condition=" '$(TargetFrameworks)' == '' ">net6.0;net7.0;net8.0;net9.0;net10.0</TargetFrameworks>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- NuGet Packaging -->
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <Authors>Angelo Breuer</Authors>
+        <Company>Angelo Breuer</Company>
+        <PackageReleaseNotes>Compatible with Lavalink Server 4.x</PackageReleaseNotes>
+        <RepositoryType>git</RepositoryType>
+        <PackageProjectUrl />
+        <RepositoryUrl>https://github.com/angelobreuer/Lavalink4NET</RepositoryUrl>
+
+        <!-- License -->
+        <Copyright>Lavalink4NET and contributors 2025</Copyright>
+        <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+
+        <!-- Icon -->
+        <PackageIcon>Lavalink4NET.png</PackageIcon>
+        <PackageIconUrl>https://imgur.com/DbTYXxY.png</PackageIconUrl>
+
+        <!-- Nullable -->
+        <LangVersion>preview</LangVersion>
+        <Nullable>enable</Nullable>
+
+        <DebugType>portable</DebugType>
+        <DebugSymbols>true</DebugSymbols>
+
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../Lavalink4NET.png" Pack="true" PackagePath="\"  Visible="false" />
+    </ItemGroup>
+</Project>
