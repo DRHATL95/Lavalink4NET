@@ -90,7 +90,7 @@ public class PersistentQueuedPlayer : QueuedLavalinkPlayer
         public string Label => _inner.Label;
         public Microsoft.Extensions.Logging.ILogger<QueuedLavalinkPlayer> Logger =>
             (Microsoft.Extensions.Logging.ILogger<QueuedLavalinkPlayer>)(object)_inner.Logger;
-        public ISystemClock SystemClock => _inner.SystemClock;
+        public Microsoft.Extensions.Internal.ISystemClock SystemClock => _inner.SystemClock;
         public Microsoft.Extensions.Options.IOptions<QueuedLavalinkPlayerOptions> Options =>
             Microsoft.Extensions.Options.Options.Create(_options);
         public System.IServiceProvider? ServiceProvider => _inner.ServiceProvider;
